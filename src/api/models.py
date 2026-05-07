@@ -1,23 +1,14 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, DateTime, Date, Text, Enum, ForeignKey, JSON, ARRAY
-from sqlalchemy.orm import Mapped, mapped_column, relationship 
-from datetime import datetime, timezone
-from typing import List, Optional
+from sqlalchemy import String, Boolean
+from sqlalchemy.orm import Mapped, mapped_column
 
 db = SQLAlchemy()
 
-def utcnow(): 
-    return datetime.now(timezone.utc)
-
 class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
-    updated_at: Mapped[datetime] =mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
-    is_admin : Mapped[bool] = mapped_column(Boolean(), default=False, nullable=False)
 
 #  Relaciones
     profile: Mapped["Profile"] = relationship("Profile", back_populates="user", uselist=False)
@@ -33,12 +24,7 @@ class User(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "username":self.username,
             "email": self.email,
-            "is_active": self.is_active,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
-            "is_admin": self.is_admin
             # do not serialize the password, its a security breach
         }
 class Game (db.Model):
@@ -178,3 +164,4 @@ class AddGame(db.Model):
 
 
 
+        }
