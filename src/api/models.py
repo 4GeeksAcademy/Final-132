@@ -99,6 +99,18 @@ class UserSurvey(db.Model):
     user: Mapped["User"] = relationship("User", back_populates="surveys")
     game: Mapped["Game"] = relationship("Game", back_populates="user_surveys")
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "game_id": self.game_id,
+            "genres": self.genres,
+            "platforms": self.platforms,
+            "play_style": self.play_style,
+            "favorite_themes": self.favorite_themes,
+            "completed_at": self.completed_at.isoformat()
+        }
+
 
 class UserGameList(db.Model):    
     id: Mapped[int] = mapped_column(primary_key=True)    
@@ -138,8 +150,17 @@ class Comment(db.Model):
 # Relaciones
     user: Mapped["User"] = relationship("User", back_populates="comments")
     game: Mapped["Game"] = relationship("Game", back_populates="comments")
-    replies: Mapped[List["Comment"]] = relationship("Comment", backref=db.backref("parent", remote_side=[id])) #requiere nullable???
+    replies: Mapped[List["Comment"]] = relationship("Comment", backref=db.backref("parent", remote_side=[id]))
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "game_id": self.game_id,
+            "content": self.content,
+            "created_at": self.created_at.isoformat(),
+            "reply_id": self.reply_id
+        }
 
 class TierList(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -152,6 +173,14 @@ class TierList(db.Model):
     user: Mapped["User"] = relationship("User", back_populates="tier_lists")
     game: Mapped["Game"] = relationship("Game", back_populates="tier_entries")
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "game_id": self.game_id,
+            "score": self.score,
+            "created_at": self.created_at.isoformat()
+        }
 
 class Favorite(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)

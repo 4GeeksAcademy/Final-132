@@ -2,7 +2,8 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Game, UserGameList, Favorite, Profile
+from datetime import datetime, timezone
+from api.models import db, User, Game, UserGameList, Favorite, Profile, Comment, TierList, UserSurvey
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -344,3 +345,128 @@ def handle_update_profile():
 
     db.session.commit()
     return jsonify({"msg": "Profile updated", "profile": profile.serialize()}), 200
+
+
+# =============================================================================
+#  13 .   C O M E N T A R I O S   D E   J U E G O   ( G E T   / g a m e s / < i d > / c o m m e n t s )
+# =============================================================================
+@api.route('/games/<int:game_id>/comments', methods=['GET'])
+def handle_game_comments(game_id):
+    game = db.session.get(Game, game_id)
+    if game is None:
+        return jsonify({"msg": "Game not found"}), 404
+
+    comments = db.session.execute(
+        select(Comment).where(Comment.game_id == game_id).order_by(Comment.created_at.desc())
+    ).scalars().all()
+
+    return jsonify([c.serialize() for c in comments]), 200
+
+
+# =============================================================================
+#  14 .   C R E A R   C O M E N T A R I O   ( P O S T   / c o m m e n t s )
+# =============================================================================
+@api.route('/comments', methods=['POST'])
+@jwt_required()
+def handle_create_comment():
+    user_id = get_jwt_identity()
+    body = request.get_json()
+
+    if body is None or "game_id" not in body or "content" not in body:
+        return jsonify({"msg": "game_id and content are required"}), 400
+
+    game = db.session.get(Game, body["game_id"])
+    if game is None:
+        return jsonify({"msg": "Game not found"}), 404
+
+    comment = Comment(
+        user_id=user_id,
+        game_id=body["game_id"],
+        content=body["content"],
+        reply_id=body.get("reply_id")
+    )
+    db.session.add(comment)
+    db.session.commit()
+
+    return jsonify({"msg": "Comment created", "comment": comment.serialize()}), 201
+
+
+# =============================================================================
+#  15 .   T I E R   L I S T   ( G E T   / t i e r s )
+# =============================================================================
+@api.route('/tiers', methods=['GET'])
+@jwt_required()
+def handle_get_tiers():
+    user_id = get_jwt_identity()
+    tiers = db.session.execute(
+        select(TierList).where(TierList.user_id == user_id)
+    ).scalars().all()
+
+    return jsonify([t.serialize() for t in tiers]), 200
+
+
+# =============================================================================
+#  16 .   G U A R D A R   T I E R   ( P O S T   / t i e r s )
+# =============================================================================
+@api.route('/tiers', methods=['POST'])
+@jwt_required()
+def handle_save_tier():
+    user_id = get_jwt_identity()
+    body = request.get_json()
+
+    if body is None or "game_id" not in body or "score" not in body:
+        return jsonify({"msg": "game_id and score are required"}), 400
+
+    game = db.session.get(Game, body["game_id"])
+    if game is None:
+        return jsonify({"msg": "Game not found"}), 404
+
+    existing = db.session.execute(
+        select(TierList).where(
+            TierList.user_id == user_id,
+            TierList.game_id == body["game_id"]
+        )
+    ).scalar_one_or_none()
+
+    if existing:
+        existing.score = body["score"]
+        db.session.commit()
+        return jsonify({"msg": "Tier updated", "tier": existing.serialize()}), 200
+
+    tier = TierList(user_id=user_id, game_id=body["game_id"], score=body["score"])
+    db.session.add(tier)
+    db.session.commit()
+
+    return jsonify({"msg": "Tier saved", "tier": tier.serialize()}), 201
+
+
+# =============================================================================
+#  17 .   E N C U E S T A   ( P O S T   / s u r v e y s )
+# =============================================================================
+@api.route('/surveys', methods=['POST'])
+@jwt_required()
+def handle_save_survey():
+    user_id = get_jwt_identity()
+    body = request.get_json()
+
+    required = ["game_id", "genres", "platforms", "play_style", "favorite_themes"]
+    if body is None or any(f not in body for f in required):
+        return jsonify({"msg": f"Missing fields: {', '.join(required)}"}), 400
+
+    game = db.session.get(Game, body["game_id"])
+    if game is None:
+        return jsonify({"msg": "Game not found"}), 404
+
+    survey = UserSurvey(
+        user_id=user_id,
+        game_id=body["game_id"],
+        genres=body["genres"],
+        platforms=body["platforms"],
+        play_style=body["play_style"],
+        favorite_themes=body["favorite_themes"],
+        completed_at=datetime.now(timezone.utc)
+    )
+    db.session.add(survey)
+    db.session.commit()
+
+    return jsonify({"msg": "Survey completed", "survey": survey.serialize()}), 201
