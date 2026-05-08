@@ -185,3 +185,37 @@ def handle_add_user_game():
     db.session.commit()
 
     return jsonify({"msg": "Game added to your list", "entry": entry.serialize()}), 201
+
+
+# =============================================================================
+#  7 .   A C T U A L I Z A R   J U E G O   E N   L I S T A   ( P U T   / u s e r / g a m e s / < i d > )
+# =============================================================================
+# El usuario actualiza el estado, rating o review de un juego en su lista.
+# Requiere token. Body: { "status": "playing", "rating": 8, "review": "Great game!" }
+@api.route('/user/games/<int:entry_id>', methods=['PUT'])
+@jwt_required()
+def handle_update_user_game(entry_id):
+    user_id = get_jwt_identity()
+    body = request.get_json()
+
+    # Buscar la entrada asegurándonos que sea del usuario logueado
+    entry = db.session.execute(
+        select(UserGameList).where(
+            UserGameList.id == entry_id,
+            UserGameList.user_id == user_id
+        )
+    ).scalar_one_or_none()
+
+    if entry is None:
+        return jsonify({"msg": "Entry not found"}), 404
+
+    # Actualizar solo los campos que vienen en el body
+    if body.get("status"):
+        entry.status = body["status"]
+    if body.get("rating") is not None:
+        entry.rating = body["rating"]
+    if body.get("review") is not None:
+        entry.review = body["review"]
+
+    db.session.commit()
+    return jsonify({"msg": "Entry updated", "entry": entry.serialize()}), 200
