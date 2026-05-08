@@ -52,7 +52,21 @@ class Game (db.Model):
     tier_entries: Mapped[List["TierList"]] = relationship("TierList", back_populates="game")
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="game")
     add_games: Mapped[List["AddGame"]] = relationship("AddGame", back_populates="game")
- 
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "release_date": self.release_date.isoformat(),
+            "developer": self.developer,
+            "publisher": self.publisher,
+            "cover_img_url": self.cover_img_url,
+            "genres": self.genres,
+            "platforms": self.platforms,
+            "average_rating": self.average_rating,
+            "tier": self.tier
+        }
 
 class Profile(db.Model):
     id: Mapped[int] = mapped_column(ForeignKey('user.id'), primary_key=True)
