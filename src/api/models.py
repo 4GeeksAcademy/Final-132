@@ -155,6 +155,13 @@ class Favorite(db.Model):
     user: Mapped["User"] = relationship("User", back_populates="favorites")
     game: Mapped["Game"] = relationship("Game", back_populates="favorites")
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "game_id": self.game_id
+        }
+
 class Ban(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)

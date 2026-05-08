@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Game, UserGameList
+from api.models import db, User, Game, UserGameList, Favorite
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -219,3 +219,79 @@ def handle_update_user_game(entry_id):
 
     db.session.commit()
     return jsonify({"msg": "Entry updated", "entry": entry.serialize()}), 200
+
+
+# =============================================================================
+#  8 .   F A V O R I T O S   ( G E T   / f a v o r i t e s )
+# =============================================================================
+# Devuelve todos los favoritos del usuario logueado.
+@api.route('/favorites', methods=['GET'])
+@jwt_required()
+def handle_get_favorites():
+    user_id = get_jwt_identity()
+    favorites = db.session.execute(
+        select(Favorite).where(Favorite.user_id == user_id)
+    ).scalars().all()
+
+    return jsonify([fav.serialize() for fav in favorites]), 200
+
+
+# =============================================================================
+#  9 .   A G R E G A R   F A V O R I T O   ( P O S T   / f a v o r i t e s )
+# =============================================================================
+# Agrega un juego a favoritos del usuario.
+# Body: { "game_id": 1 }
+@api.route('/favorites', methods=['POST'])
+@jwt_required()
+def handle_add_favorite():
+    user_id = get_jwt_identity()
+    body = request.get_json()
+
+    if body is None or "game_id" not in body:
+        return jsonify({"msg": "game_id is required"}), 400
+
+    game_id = body["game_id"]
+
+    game = db.session.get(Game, game_id)
+    if game is None:
+        return jsonify({"msg": "Game not found"}), 404
+
+    existing = db.session.execute(
+        select(Favorite).where(
+            Favorite.user_id == user_id,
+            Favorite.game_id == game_id
+        )
+    ).scalar_one_or_none()
+    if existing:
+        return jsonify({"msg": "Game already in favorites"}), 400
+
+    fav = Favorite(user_id=user_id, game_id=game_id)
+    db.session.add(fav)
+    db.session.commit()
+
+    return jsonify({"msg": "Favorite added", "favorite": fav.serialize()}), 201
+
+
+# =============================================================================
+#  10 .   E L I M I N A R   F A V O R I T O   ( D E L E T E   / f a v o r i t e s / < g a m e _ i d > )
+# =============================================================================
+# Saca un juego de favoritos.
+@api.route('/favorites/<int:game_id>', methods=['DELETE'])
+@jwt_required()
+def handle_delete_favorite(game_id):
+    user_id = get_jwt_identity()
+
+    fav = db.session.execute(
+        select(Favorite).where(
+            Favorite.user_id == user_id,
+            Favorite.game_id == game_id
+        )
+    ).scalar_one_or_none()
+
+    if fav is None:
+        return jsonify({"msg": "Favorite not found"}), 404
+
+    db.session.delete(fav)
+    db.session.commit()
+
+    return jsonify({"msg": "Favorite removed"}), 200
