@@ -19,6 +19,16 @@ class User(db.Model):
     updated_at: Mapped[datetime] =mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
     is_admin : Mapped[bool] = mapped_column(Boolean(), default=False, nullable=False)
 
+    # Relaciones
+    profile: Mapped["Profile"] = relationship("Profile", back_populates="user", uselist=False)
+    surveys: Mapped[List["UserSurvey"]] = relationship("UserSurvey", back_populates="user")
+    game_lists: Mapped[List["UserGameList"]] = relationship("UserGameList", back_populates="user")
+    comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="user")
+    tier_lists: Mapped[List["TierList"]] = relationship("TierList", back_populates="user")
+    favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="user")
+    add_games: Mapped[List["AddGame"]] = relationship("AddGame", back_populates="user")
+    bans_received: Mapped[List["Ban"]] = relationship("Ban", foreign_keys="Ban.user_id", back_populates="user")
+    bans_given: Mapped[List["Ban"]] = relationship("Ban", foreign_keys="Ban.admin_id", back_populates="admin")
 
     def serialize(self):
         return {
