@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Game
+from api.models import db, User, Game, UserGameList
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -141,3 +141,47 @@ def handle_game(game_id):
         return jsonify({"msg": "Game not found"}), 404
 
     return jsonify(game.serialize()), 200
+
+
+# =============================================================================
+#  6 .   A G R E G A R   J U E G O   A   L I S T A   ( P O S T   / u s e r / g a m e s )
+# =============================================================================
+# El usuario logueado agrega un juego a su lista personal.
+# Requiere token. Body: { "game_id": 1, "status": "want_to_play", "rating": 0, "review": "" }
+@api.route('/user/games', methods=['POST'])
+@jwt_required()
+def handle_add_user_game():
+    user_id = get_jwt_identity()
+    body = request.get_json()
+
+    if body is None or "game_id" not in body:
+        return jsonify({"msg": "game_id is required"}), 400
+
+    game_id = body.get("game_id")
+    status = body.get("status", "want_to_play")
+    rating = body.get("rating", 0)
+    review = body.get("review", "")
+
+    # Verificar que el juego existe
+    game = db.session.get(Game, game_id)
+    if game is None:
+        return jsonify({"msg": "Game not found"}), 404
+
+    # Verificar que no lo tenga ya en su lista
+    existing = db.session.execute(
+        select(UserGameList).where(
+            UserGameList.user_id == user_id,
+            UserGameList.game_id == game_id
+        )
+    ).scalar_one_or_none()
+    if existing:
+        return jsonify({"msg": "Game already in your list"}), 400
+
+    entry = UserGameList(
+        user_id=user_id, game_id=game_id,
+        status=status, rating=rating, review=review
+    )
+    db.session.add(entry)
+    db.session.commit()
+
+    return jsonify({"msg": "Game added to your list", "entry": entry.serialize()}), 201

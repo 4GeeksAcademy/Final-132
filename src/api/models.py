@@ -107,6 +107,17 @@ class UserGameList(db.Model):
     user: Mapped["User"] = relationship("User", back_populates= "game_lists")
     game: Mapped["Game"] = relationship("Game", back_populates= "game_lists")
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "game_id": self.game_id,
+            "status": self.status,
+            "rating": self.rating,
+            "review": self.review,
+            "added_at": self.added_at.isoformat(),
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None
+        }
 
 class Comment(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
