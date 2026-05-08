@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Game, UserGameList, Favorite
+from api.models import db, User, Game, UserGameList, Favorite, Profile
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -295,3 +295,52 @@ def handle_delete_favorite(game_id):
     db.session.commit()
 
     return jsonify({"msg": "Favorite removed"}), 200
+
+
+# =============================================================================
+#  11 .   V E R   P E R F I L   ( G E T   / p r o f i l e )
+# =============================================================================
+# Devuelve el perfil del usuario logueado.
+# Si no tiene perfil, lo crea automáticamente con valores por defecto.
+@api.route('/profile', methods=['GET'])
+@jwt_required()
+def handle_get_profile():
+    user_id = get_jwt_identity()
+    profile = db.session.get(Profile, user_id)
+
+    # Si no existe perfil, lo creamos con valores por defecto
+    if profile is None:
+        profile = Profile(id=user_id)
+        db.session.add(profile)
+        db.session.commit()
+
+    return jsonify(profile.serialize()), 200
+
+
+# =============================================================================
+#  12 .   A C T U A L I Z A R   P E R F I L   ( P U T   / p r o f i l e )
+# =============================================================================
+# Actualiza los campos del perfil.
+# Body: { "description": "...", "avatar_url": "...", "redes": {...} }
+@api.route('/profile', methods=['PUT'])
+@jwt_required()
+def handle_update_profile():
+    user_id = get_jwt_identity()
+    body = request.get_json()
+
+    profile = db.session.get(Profile, user_id)
+    if profile is None:
+        return jsonify({"msg": "Profile not found"}), 404
+
+    if body is None:
+        return jsonify({"msg": "No data provided"}), 400
+
+    if body.get("description") is not None:
+        profile.description = body["description"]
+    if body.get("avatar_url") is not None:
+        profile.avatar_url = body["avatar_url"]
+    if body.get("redes") is not None:
+        profile.redes = body["redes"]
+
+    db.session.commit()
+    return jsonify({"msg": "Profile updated", "profile": profile.serialize()}), 200

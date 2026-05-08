@@ -77,6 +77,14 @@ class Profile(db.Model):
 # Relaciones
     user: Mapped["User"] = relationship("User", back_populates="profile")
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "description": self.description,
+            "redes": self.redes,
+            "avatar_url": self.avatar_url
+        }
+
 class UserSurvey(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)    
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'),nullable=False)    
