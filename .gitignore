@@ -74,6 +74,9 @@ dist/*
 !.env.example
 .now
 
+# personal AGENTS.md (Gentleman Guardian Angel rules - local config)
+/AGENTS.md
+
 # backend stuff
 .venv
 database.database
