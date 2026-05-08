@@ -1,9 +1,8 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User
+from api.models import db, User, Game
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
@@ -100,3 +99,26 @@ def handle_me():
     if user is None:
         return jsonify({"msg": "User nor found"}), 404
     return jsonify(user.serialize()), 200
+
+#4 Listar Juegos(/games)
+# Devuelve todos los juegos de la base de datos.
+# No requiere autenticación — cualquiera puede ver los juegos.
+@api.route('/games', methods=['GET'])
+def handle_games()
+    query = select(Game)
+    games = db.session.execute(query).scalars().all()
+
+     # Convertimos cada objeto Game a JSON usando su método serialize()
+    return jsonify([game.serialize() for game in games]), 200
+
+#5 Detalles de juegos(/games/<id>)
+# Devuelve un solo juego por su ID.
+@api.route('/game/<int:game_id>', methods=['GET'])
+def handle_game(game_id):
+    # db.session.get() busca por primary key
+    game = db.session.get(Game, game_id)
+
+    if game is None:
+        return jsonify({"msg": "Game not found"}), 404
+    
+    return jsonify(game.serialize()),200
