@@ -55,7 +55,7 @@ def handle_signup():
     email_empty = len(email.strip()) < 5
     password_empty = len(password.strip()) < 5
     if username_empty or email_empty or password_empty:
-        return jsonify({"msg": "Usermane, email and password must be at least five characters"}), 400
+        return jsonify({"msg": "Username, email and password must be at least five characters"}), 400
 
     # Revisamos si el usuario ya existe en la base de datos
     email_exists = db.session.execute(select(User).where(
