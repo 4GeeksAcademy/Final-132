@@ -93,9 +93,13 @@ def create_game():
     #
     # El orden importa: si está vacío, NO decimos "mínimo 3 chars",
     # decimos "cannot be empty". Cada error corta ahí.
+    #
+    # Notá que cada campo tiene su propio mínimo:
+    #   title=3, description=10, developer=2, publisher=2
     # ------------------------------------------------------------
     text_fields = {
         "title": 3,
+        "description": 10,
         "developer": 2,
         "publisher": 2
     }
@@ -104,12 +108,6 @@ def create_game():
             return jsonify({"msg": f"{field.capitalize()} cannot be empty"}), 400
         if len(body[field].strip()) < min_len:
             return jsonify({"msg": f"{field.capitalize()} must be at least {min_len} characters"}), 400
-
-    # Description se valida aparte porque tiene mínimo 10 (los otros 2-3)
-    if not body["description"].strip():
-        return jsonify({"msg": "Description cannot be empty"}), 400
-    if len(body["description"].strip()) < 10:
-        return jsonify({"msg": "Description must be at least 10 characters"}), 400
 
     # Validar que genres y platforms sean listas
     if not isinstance(body["genres"], list) or len(body["genres"]) == 0:
