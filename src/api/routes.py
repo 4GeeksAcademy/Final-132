@@ -50,12 +50,13 @@ def handle_signup():
     username = body.get("username")
     email = body.get("email")
     password = body.get("password")
-    
-    username_empty = len(username.strip()) < 5
-    email_empty = len(email.strip()) < 5
-    password_empty = len(password.strip()) < 5
-    if username_empty or email_empty or password_empty:
-        return jsonify({"msg": "Username, email and password must be at least five characters"}), 400
+
+    # Validar vacío + mínimo de caracteres
+    for field_name, field_val in [("Username", username), ("Email", email), ("Password", password)]:
+        if not field_val.strip():
+            return jsonify({"msg": f"{field_name} cannot be empty"}), 400
+        if len(field_val.strip()) < 5:
+            return jsonify({"msg": f"{field_name} must be at least 5 characters"}), 400
 
     # Revisamos si el usuario ya existe en la base de datos
     email_exists = db.session.execute(select(User).where(
@@ -88,10 +89,12 @@ def handle_login():
     username = body.get("username")
     web_password = body.get("password")
 
-    username_empty = len(username.strip()) < 5
-    password_empty = len(web_password.strip()) < 5
-    if username_empty or password_empty:
-        return jsonify({"msg": "Username, email and password must be at least five characters"}), 400
+    # Validar vacío + mínimo de caracteres
+    for field_name, field_val in [("Username", username), ("Password", web_password)]:
+        if not field_val.strip():
+            return jsonify({"msg": f"{field_name} cannot be empty"}), 400
+        if len(field_val.strip()) < 5:
+            return jsonify({"msg": f"{field_name} must be at least 5 characters"}), 400
 
     # Filtrar usuario por nombre
     query = select(User).where(User.username == username)
