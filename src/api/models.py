@@ -66,8 +66,8 @@ class Game(db.Model):
     developer: Mapped[str] = mapped_column(String(100), nullable=False)
     publisher: Mapped[str] = mapped_column(String(100), nullable=False)
     cover_img_url: Mapped[str] = mapped_column(String(255), nullable=False)
-    genres: Mapped[List[str]] = mapped_column(ARRAY(String(40)), nullable=False)
-    platforms: Mapped[List[str]] = mapped_column(ARRAY(String(30)), nullable=False)
+    genres: Mapped[list] = mapped_column(JSON, nullable=False)
+    platforms: Mapped[list] = mapped_column(JSON, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     # Relaciones
@@ -121,10 +121,10 @@ class UserSurvey(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
     game_id: Mapped[int] = mapped_column(ForeignKey('game.id'), nullable=False)
-    genres: Mapped[List[str]] = mapped_column(ARRAY(String(60)), nullable=False)
-    platforms: Mapped[List[str]] = mapped_column(ARRAY(String(35)), nullable=False)
+    genres: Mapped[list] = mapped_column(JSON, nullable=False)
+    platforms: Mapped[list] = mapped_column(JSON, nullable=False)
     play_style: Mapped[str] = mapped_column(String(20), nullable=False)
-    favorite_themes: Mapped[List[str]] = mapped_column(ARRAY(String(50)), nullable=False)
+    favorite_themes: Mapped[list] = mapped_column(JSON, nullable=False)
     completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     # Relaciones
