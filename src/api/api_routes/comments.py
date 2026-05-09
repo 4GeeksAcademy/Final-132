@@ -44,6 +44,9 @@ def create_comment():
     if not body or "game_id" not in body or "content" not in body:
         return jsonify({"msg": "game_id and content are required"}), 400
 
+    if len(body["content"].strip()) < 1:
+        return jsonify({"msg": "Content cannot be empty"}), 400
+
     game = db.session.get(Game, body["game_id"])
     if not game:
         return jsonify({"msg": "Game not found"}), 404
@@ -83,6 +86,9 @@ def update_comment(comment_id):
     body = request.get_json()
     if not body or "content" not in body:
         return jsonify({"msg": "content is required"}), 400
+
+    if len(body["content"].strip()) < 1:
+        return jsonify({"msg": "Content cannot be empty"}), 400
 
     comment.content = body["content"]
     db.session.commit()
