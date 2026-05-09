@@ -83,6 +83,16 @@ def create_game():
     if missing:
         return jsonify({"msg": f"Missing fields: {', '.join(missing)}"}), 400
 
+    # Validar que title no sea demasiado corto
+    if len(body["title"].strip()) < 3:
+        return jsonify({"msg": "Title must be at least 3 characters"}), 400
+
+    # Validar que genres y platforms sean listas
+    if not isinstance(body["genres"], list) or len(body["genres"]) == 0:
+        return jsonify({"msg": "genres must be a non-empty list"}), 400
+    if not isinstance(body["platforms"], list) or len(body["platforms"]) == 0:
+        return jsonify({"msg": "platforms must be a non-empty list"}), 400
+
     release = body["release_date"]
     if isinstance(release, str):
         release = datetime.fromisoformat(release).date()
@@ -408,10 +418,15 @@ def add_user_game():
     if existing:
         return jsonify({"msg": "Game already in your list"}), 400
 
+    status = body.get("status", "want_to_play")
+    valid_statuses = ["want_to_play", "playing", "completed", "dropped"]
+    if status not in valid_statuses:
+        return jsonify({"msg": f"Invalid status. Valid: {', '.join(valid_statuses)}"}), 400
+
     entry = UserGameList(
         user_id=user_id,
         game_id=body["game_id"],
-        status=body.get("status", "want_to_play"),
+        status=status,
         rating=body.get("rating", 0),
         review=body.get("review", "no review")
     )
