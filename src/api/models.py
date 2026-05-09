@@ -90,8 +90,8 @@ class Game(db.Model):
             "cover_img_url": self.cover_img_url,
             "genres": self.genres,
             "platforms": self.platforms,
-            "average_rating": self.average_rating,
-            "tier": self.tier,
+            "average_rating": self.game_tier.average_rating if self.game_tier else None,
+            "tier": self.game_tier.tier if self.game_tier else None,
             "created_at": self.created_at.isoformat(),
             "game_tier": self.game_tier.serialize() if self.game_tier else None,
             "comment_count": len(self.comments),
@@ -234,6 +234,7 @@ class UserGameTier(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     game_tier_id: Mapped[int] = mapped_column(ForeignKey('game_tier.id'), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    rating: Mapped[int] = mapped_column(nullable=False)  # 1-5
     __table_args__ = (db.UniqueConstraint('game_tier_id', 'user_id'),)
 
     # Relaciones
@@ -246,6 +247,7 @@ class UserGameTier(db.Model):
             "game_tier_id": self.game_tier_id,
             "user_id": self.user_id,
             "username": self.user.username if self.user else None,
+            "rating": self.rating,
         }
 
 class Favorite(db.Model):
