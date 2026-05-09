@@ -65,10 +65,16 @@ def update_profile():
         return jsonify({"msg": "No data provided"}), 400
 
     if "description" in body:
+        if len(body["description"].strip()) < 1:
+            return jsonify({"msg": "Description cannot be empty"}), 400
         profile.description = body["description"]
     if "avatar_url" in body:
+        if len(body["avatar_url"].strip()) < 1:
+            return jsonify({"msg": "Avatar URL cannot be empty"}), 400
         profile.avatar_url = body["avatar_url"]
     if "redes" in body:
+        if not isinstance(body["redes"], dict):
+            return jsonify({"msg": "redes must be a JSON object"}), 400
         profile.redes = body["redes"]
 
     db.session.commit()
@@ -116,6 +122,16 @@ def create_survey():
     required = ["game_id", "genres", "platforms", "play_style", "favorite_themes"]
     if not body or any(f not in body for f in required):
         return jsonify({"msg": f"Missing fields: {', '.join(required)}"}), 400
+
+    # Validar que genres, platforms y favorite_themes sean listas
+    for list_field in ["genres", "platforms", "favorite_themes"]:
+        if not isinstance(body[list_field], list) or len(body[list_field]) == 0:
+            return jsonify({"msg": f"{list_field} must be a non-empty list"}), 400
+
+    # Validar play_style
+    valid_styles = ["casual", "hardcore", "competitive"]
+    if body["play_style"] not in valid_styles:
+        return jsonify({"msg": f"play_style must be one of: {', '.join(valid_styles)}"}), 400
 
     game = db.session.get(Game, body["game_id"])
     if not game:
@@ -176,6 +192,9 @@ def create_addgame():
 
     if not body or "game_id" not in body or "body" not in body:
         return jsonify({"msg": "game_id and body are required"}), 400
+
+    if not isinstance(body["body"], dict):
+        return jsonify({"msg": "body field must be a JSON object"}), 400
 
     game = db.session.get(Game, body["game_id"])
     if not game:
