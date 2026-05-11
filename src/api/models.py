@@ -114,7 +114,7 @@ class Profile(db.Model):
             "redes": self.redes,
             "avatar_url": self.avatar_url,
         }
-
+# si se añade mas requistos se tiene que poner aqui mas tambien
 class UserSurvey(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
