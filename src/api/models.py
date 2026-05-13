@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, DateTime, Date, Text, Enum, ForeignKey, JSON, ARRAY
+from sqlalchemy import String, Boolean, DateTime, Date, Text, Enum, ForeignKey, JSON, ARRAY,Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship 
 from datetime import datetime, timezone
 from typing import List, Optional
@@ -74,7 +74,7 @@ class Game(db.Model):
     user_surveys: Mapped[List["UserSurvey"]] = relationship("UserSurvey", back_populates="game")
     game_lists: Mapped[List["UserGameList"]] = relationship("UserGameList", back_populates="game")
     comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="game")
-    game_tier: Mapped["GameTier"] = relationship("GameTier", back_populates="game", uselist=False)
+    game_tier: Mapped["GameTier"] = relationship("GameTier", back_populates="game", uselist=False, cascade="all, delete-orphan")
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="game")
     add_games: Mapped[List["AddGame"]] = relationship("AddGame", back_populates="game")
 
@@ -116,7 +116,7 @@ class Profile(db.Model):
             "redes": self.redes,
             "avatar_url": self.avatar_url,
         }
-
+# si se añade mas requistos se tiene que poner aqui mas tambien
 class UserSurvey(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
@@ -234,7 +234,7 @@ class UserGameTier(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     game_tier_id: Mapped[int] = mapped_column(ForeignKey('game_tier.id'), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
-    rating: Mapped[int] = mapped_column(nullable=False)  # 1-5
+    rating: Mapped[int] = mapped_column(Integer,nullable=False)
     __table_args__ = (db.UniqueConstraint('game_tier_id', 'user_id'),)
 
     # Relaciones
