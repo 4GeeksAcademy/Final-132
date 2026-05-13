@@ -72,7 +72,7 @@ class Game(db.Model):
 
     # Relaciones
     user_surveys: Mapped[List["UserSurvey"]] = relationship("UserSurvey", back_populates="game")
-    game_lists: Mapped[List["UserGameList"]] = relationship("UserGameList", back_populates="game")
+    user_glgs: Mapped[List["UserGLG"]] = relationship("UserGLG", back_populates="game")
     comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="game")
     game_tier: Mapped["GameTier"] = relationship("GameTier", back_populates="game", uselist=False, cascade="all, delete-orphan")
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="game")
@@ -145,31 +145,46 @@ class UserSurvey(db.Model):
 class UserGameList(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
-    game_id: Mapped[int] = mapped_column(ForeignKey('game.id'), nullable=False)
-    status: Mapped[str] = mapped_column(Enum('want_to_play', 'playing', 'completed', 'dropped', name='status_enum'), nullable=False)
-    rating: Mapped[int] = mapped_column(default=0, nullable=False)
-    review: Mapped[str] = mapped_column(Text, default="no review", nullable=False)
-    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    __table_args__ = (db.UniqueConstraint('user_id', 'game_id'),)
+    __table_args__ = (db.UniqueConstraint('user_id'),)
 
     # Relaciones
     user: Mapped["User"] = relationship("User", back_populates= "game_lists")
-    game: Mapped["Game"] = relationship("Game", back_populates= "game_lists")
+    user_glg: Mapped[List["UserGLG"]] = relationship("UserGLG", back_populates= "ugl")
 
     #Serialize
     def serialize(self):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "game_id": self.game_id,
-            "game_title": self.game.title if self.game else None,
-            "game_cover": self.game.cover_img_url if self.game else None,
+            "games": [game.serialize() for game in self.user_glg]
+        }
+    
+#Tabla intermedia de UserGameList y Game
+class UserGLG(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    game_id: Mapped[int] = mapped_column(ForeignKey('game.id'), nullable=False)
+    ugl_id: Mapped[int] =mapped_column(ForeignKey('user_game_list.id'), nullable=False)
+    status: Mapped[str] = mapped_column(Enum('want_to_play', 'playing', 'completed', 'dropped', name='status_enum'), nullable=False)
+    rating: Mapped[int] = mapped_column(default=0, nullable=False)
+    review: Mapped[str] = mapped_column(Text, default="no review", nullable=False)
+    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    #Relaciones
+    game: Mapped["Game"] = relationship("Game", back_populates="user_glgs")
+    ugl: Mapped["UserGameList"] = relationship("UserGameList", back_populates="user_glg")
+    
+     #Serialize
+    def serialize(self):
+        return {
+            "id": self.id,
+            "ugl_id":self.ugl.id,
             "status": self.status,
             "rating": self.rating,
             "review": self.review,
             "added_at": self.added_at.isoformat(),
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "game": self.game.serialize()
         }
 
 class Comment(db.Model):
