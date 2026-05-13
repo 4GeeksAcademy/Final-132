@@ -1,9 +1,10 @@
 from api.routes import api
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from api.models import db, Game, GameTier, UserGameTier, UserGameList
+from api.models import db, Game, GameTier, UserGameTier, UserGameList, User
 from sqlalchemy import select
 from datetime import datetime, timezone
+
 
 
 # ─── calcular tier desde average rating ───
@@ -23,6 +24,16 @@ def _calcular_tier(avg):
         return "D"
     return "F"
 
+def check_admin(user_id):
+    user = db.session.get(User,user_id)
+    
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+    
+    is_admin = user.is_admin
+    if not is_admin:        
+        return jsonify({"msg": "Only admin can Update a game"}), 400
+    return None
 
 # ─── recalcular GameTier ───
 # Cada vez que alguien vota, actualiza o borra su voto,
@@ -39,6 +50,9 @@ def _recalcular_game_tier(game_tier):
         total = sum(v.rating for v in votes)
         game_tier.average_rating = round(total / len(votes), 2)
         game_tier.tier = _calcular_tier(game_tier.average_rating)
+    
+
+    
 
     game_tier.updated_at = datetime.now(timezone.utc)
     db.session.commit()
@@ -70,6 +84,15 @@ def get_game(game_id):
 @api.route('/games', methods=['POST'])
 @jwt_required()
 def create_game():
+    user_id = get_jwt_identity()
+    user = db.session.get(User,user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+    
+    is_admin = user.is_admin
+    if not is_admin:
+        return jsonify({"msg": "Only admin can add a game"}), 400
+    
     body = request.get_json()
     if not body:
         return jsonify({"msg": "No data provided"}), 400
@@ -135,6 +158,10 @@ def create_game():
 @api.route('/games/<int:game_id>', methods=['PUT'])
 @jwt_required()
 def update_game(game_id):
+    user_id = get_jwt_identity()
+    error = check_admin(user_id)  
+    if error:
+        return error  
     game = db.session.get(Game, game_id)
     if not game:
         return jsonify({"msg": "Game not found"}), 404
@@ -172,7 +199,7 @@ def update_game(game_id):
                 release = datetime.fromisoformat(release).date()
             except ValueError:
                 return jsonify({"msg": "Invalid release_date format. Use ISO format (YYYY-MM-DD)"}), 400
-        game.release_date = release
+        setattr(game,"release_date",release)
 
     db.session.commit()
     return jsonify({"msg": "Game updated", "game": game.serialize()}), 200
@@ -182,10 +209,20 @@ def update_game(game_id):
 @api.route('/games/<int:game_id>', methods=['DELETE'])
 @jwt_required()
 def delete_game(game_id):
+    user_id = get_jwt_identity()
+    error = check_admin(user_id)  
+    if error:
+        return error
+    
     game = db.session.get(Game, game_id)
     if not game:
         return jsonify({"msg": "Game not found"}), 404
-
+    game_tier = db.session.execute(
+        select(GameTier).where(
+            GameTier.game_id == game.id
+        )
+    ).scalar_one_or_none()
+    db.session.delete(game_tier)
     db.session.delete(game)
     db.session.commit()
 
@@ -303,21 +340,30 @@ def create_user_game_tier():
     user_id = get_jwt_identity()
     body = request.get_json()
 
-    if not body or "game_tier_id" not in body or "rating" not in body:
-        return jsonify({"msg": "game_tier_id and rating are required"}), 400
+    if not body or "game_id" not in body or "rating" not in body:
+        return jsonify({"msg": "game_id and rating are required"}), 400
 
     rating = body["rating"]
     if not isinstance(rating, int) or rating < 1 or rating > 5:
         return jsonify({"msg": "Rating must be an integer between 1 and 5"}), 400
+    game_id = body.get("game_id")
+    game = db.session.get(Game, game_id)
+    if not  game:
+        return jsonify({"msg": "Game not found"}), 404
 
-    game_tier = db.session.get(GameTier, body["game_tier_id"])
+    game_tier = db.session.execute(
+        select(GameTier).where(
+            GameTier.game_id == game_id
+        )
+    ).scalar_one_or_none()
+
     if not game_tier:
         return jsonify({"msg": "Game tier not found"}), 404
 
     existing = db.session.execute(
         select(UserGameTier).where(
             UserGameTier.user_id == user_id,
-            UserGameTier.game_tier_id == body["game_tier_id"]
+            UserGameTier.game_tier_id == game_tier.id
         )
     ).scalar_one_or_none()
     if existing:
@@ -325,7 +371,7 @@ def create_user_game_tier():
 
     vote = UserGameTier(
         user_id=user_id,
-        game_tier_id=body["game_tier_id"],
+        game_tier_id=game_tier.id,
         rating=rating
     )
     db.session.add(vote)
@@ -371,13 +417,19 @@ def update_user_game_tier(vote_id):
 
 
 #Delete a user game tier
-@api.route('/user/game-tiers/<int:vote_id>', methods=['DELETE'])
+@api.route('/user/game-tiers/<int:game_id>', methods=['DELETE'])
 @jwt_required()
-def delete_user_game_tier(vote_id):
+def delete_user_game_tier(game_id):
     user_id = get_jwt_identity()
+    game_tier = db.session.execute(
+        select(GameTier).where(
+            GameTier.game_id == game_id,
+        )
+    ).scalar_one_or_none()
+    vote_id = game_tier.id
     vote = db.session.execute(
         select(UserGameTier).where(
-            UserGameTier.id == vote_id,
+            UserGameTier.game_tier_id == vote_id,
             UserGameTier.user_id == user_id
         )
     ).scalar_one_or_none()

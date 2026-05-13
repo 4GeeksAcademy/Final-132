@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, DateTime, Date, Text, Enum, ForeignKey, JSON, ARRAY
+from sqlalchemy import String, Boolean, DateTime, Date, Text, Enum, ForeignKey, JSON, ARRAY,Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship 
 from datetime import datetime, timezone
 from typing import List, Optional
@@ -232,6 +232,7 @@ class UserGameTier(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     game_tier_id: Mapped[int] = mapped_column(ForeignKey('game_tier.id'), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    rating: Mapped[int] = mapped_column(Integer,nullable=False)
     __table_args__ = (db.UniqueConstraint('game_tier_id', 'user_id'),)
 
     # Relaciones
