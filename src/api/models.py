@@ -20,9 +20,9 @@ class User(db.Model):
     is_admin: Mapped[bool] = mapped_column(Boolean(), default=False, nullable=False)
 
     # Relaciones
-    profile: Mapped["Profile"] = relationship("Profile", back_populates="user", uselist=False)
+    profile: Mapped["Profile"] = relationship("Profile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     surveys: Mapped[List["UserSurvey"]] = relationship("UserSurvey", back_populates="user")
-    game_lists: Mapped[List["UserGameList"]] = relationship("UserGameList", back_populates="user")
+    game_lists: Mapped[List["UserGameList"]] = relationship("UserGameList", back_populates="user", cascade="all, delete-orphan")
     comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="user")
     bans_given: Mapped[List["Ban"]] = relationship("Ban", foreign_keys="Ban.admin_id", back_populates="admin")
     bans_received: Mapped[List["Ban"]] = relationship("Ban", foreign_keys="Ban.user_id", back_populates="user")
