@@ -1,46 +1,79 @@
-export const initialStore=()=>{
-  return{
+export const initialStore = () => {
+  return {
+    // ─── Datos del template original (no borrar) ───
     message: null,
-    games: [],
-    user: null,
-    token: null,
-    isAuthenticated: false,
-  }
-}
+    todos: [
+      {
+        id: 1,
+        title: "Make the bed",
+        background: null,
+      },
+      {
+        id: 2,
+        title: "Do my homework",
+        background: null,
+      },
+    ],
+
+    // ─── 👇 AGREGADO para auth (Login / Signup / Profile) ───
+    user: null, // datos del usuario: { id, username, email }
+    token: null, // JWT para autenticar peticiones
+    isAuthenticated: false, // true si hay sesión activa
+  };
+};
 
 export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'set_games':
+  switch (action.type) {
+    // ─── Del template original ───
+    case "set_hello":
       return {
         ...store,
-        games: action.payload
+        message: action.payload,
       };
-    case 'set_auth':
+
+    case "add_task":
+      const { id, color } = action.payload;
+      return {
+        ...store,
+        todos: store.todos.map((todo) =>
+          todo.id === id ? { ...todo, background: color } : todo
+        ),
+      };
+
+    // ─── 👇 AGREGADO para auth ───
+
+    // Después de login exitoso: guarda user + token en el store
+    case "set_auth":
       return {
         ...store,
         user: action.payload.user,
         token: action.payload.token,
-        isAuthenticated: true
+        isAuthenticated: true,
       };
-    case 'logout':
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
+
+    // Cerrar sesión: limpia store y sessionStorage
+    case "logout":
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
       return {
         ...store,
         user: null,
         token: null,
-        isAuthenticated: false
+        isAuthenticated: false,
       };
-    case 'restore_auth':
-      const token = sessionStorage.getItem('token');
-      const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+
+    // Al recargar la página: recupera token desde sessionStorage
+    case "restore_auth":
+      const token = sessionStorage.getItem("token");
+      const user = JSON.parse(sessionStorage.getItem("user") || "null");
       return {
         ...store,
         user,
         token,
-        isAuthenticated: !!token && !!user
+        isAuthenticated: !!token && !!user,
       };
+
     default:
-      throw Error('Unknown action.');
-  }    
+      throw Error("Unknown action.");
+  }
 }
