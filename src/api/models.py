@@ -4,6 +4,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 from typing import List, Optional
 
+imgurl = "https://images.unsplash.com/vector-1738312097380-45562da00459?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+
 db = SQLAlchemy()
 
 def utcnow(): 
@@ -21,13 +23,13 @@ class User(db.Model):
 
     # Relaciones
     profile: Mapped["Profile"] = relationship("Profile", back_populates="user", uselist=False, cascade="all, delete-orphan")
-    surveys: Mapped[List["UserSurvey"]] = relationship("UserSurvey", back_populates="user")
+    surveys: Mapped[List["UserSurvey"]] = relationship("UserSurvey", back_populates="user", cascade="all, delete-orphan")
     game_lists: Mapped[List["UserGameList"]] = relationship("UserGameList", back_populates="user", cascade="all, delete-orphan")
-    comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="user")
-    bans_given: Mapped[List["Ban"]] = relationship("Ban", foreign_keys="Ban.admin_id", back_populates="admin")
-    bans_received: Mapped[List["Ban"]] = relationship("Ban", foreign_keys="Ban.user_id", back_populates="user")
-    add_games: Mapped[List["AddGame"]] = relationship("AddGame", back_populates="user")
-    user_game_tiers: Mapped[List["UserGameTier"]] = relationship("UserGameTier", back_populates="user")
+    comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+    bans_given: Mapped[List["Ban"]] = relationship("Ban", foreign_keys="Ban.admin_id", back_populates="admin")  # ← este NO(por que quieres ver los bans que ha hecho un admin borrado/baneado)
+    bans_received: Mapped[List["Ban"]] = relationship("Ban", foreign_keys="Ban.user_id", back_populates="user", cascade="all, delete-orphan")
+    add_games: Mapped[List["AddGame"]] = relationship("AddGame", back_populates="user", cascade="all, delete-orphan")
+    user_game_tiers: Mapped[List["UserGameTier"]] = relationship("UserGameTier", back_populates="user", cascade="all, delete-orphan")
 
 
 # Serialize 
@@ -45,17 +47,7 @@ class User(db.Model):
         
             # do not serialize the password, its a security breach
         }
-    
-            #ejemplos de serialize
-
-           # "profile_id": self.profile_id,
-           # "survey_id": self.survey_id,
-            #"surveys": [survey.serialize() for survey in self.surveys] ,
-           # "game_list_id":self.game_list_id ,
-           # "comments": [comment.serialize() for comment in self.comments],
-           # "is_admin": self.is_admin,
-            
-   
+     
 class Game(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -109,7 +101,7 @@ class Profile(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), unique=True, nullable=False)
     description: Mapped[str] = mapped_column(Text, default="No description", nullable=False)
     redes: Mapped[Optional[dict]] = mapped_column(JSON)
-    avatar_url: Mapped[str] = mapped_column(String(255), default="imgurl", nullable=False)
+    avatar_url: Mapped[str] = mapped_column(String(255), default=imgurl, nullable=False)
 
     # Relaciones
     user: Mapped["User"] = relationship("User", back_populates="profile")
@@ -157,7 +149,7 @@ class UserGameList(db.Model):
 
     # Relaciones
     user: Mapped["User"] = relationship("User", back_populates= "game_lists")
-    user_glg: Mapped[List["UserGLG"]] = relationship("UserGLG", back_populates= "ugl")
+    user_glg: Mapped[List["UserGLG"]] = relationship("UserGLG", back_populates= "ugl", cascade="all, delete-orphan")
 
     #Serialize
     def serialize(self):
@@ -178,6 +170,7 @@ class UserGLG(db.Model):
     added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     is_favorite: Mapped[bool] = mapped_column(Boolean(), default=False, nullable=False)
+    __table_args__ = (db.UniqueConstraint('ugl_id', 'game_id'),)  # ← añadir esto(no se puede tener dos juegos igual en la misma lista de un user)
 
     #Relaciones
     game: Mapped["Game"] = relationship("Game", back_populates="user_glgs")
@@ -198,7 +191,7 @@ class UserGLG(db.Model):
 
 class Comment(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
     game_id: Mapped[int] = mapped_column(ForeignKey('game.id'), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
@@ -274,7 +267,7 @@ class UserGameTier(db.Model):
 
 class Ban(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
     admin_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)

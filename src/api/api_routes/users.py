@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from api.models import db, User, Profile, UserSurvey, AddGame
+from api.models import db, User, Profile, UserSurvey, AddGame, imgurl
 from api.routes import api
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import select
@@ -126,7 +126,7 @@ def create_profile(user_id):
         user_id = user_id,
         description = body.get("description", "No description"),
         redes=body.get("redes", None),
-        avatar_url=body.get("avatar_url", "imgurl")
+        avatar_url=body.get("avatar_url", imgurl)
     )
     db.session.add(profile)
     db.session.commit()
