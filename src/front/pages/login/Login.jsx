@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import useGlobalReducer from "../../hooks/useGlobalReducer.jsx";
-import "./Login.css";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -15,11 +14,8 @@ export const Login = () => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(
-    location.state?.message || ""
-  );
+  const successMessage = location.state?.message || "";
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (store.isAuthenticated) {
       navigate("/", { replace: true });
@@ -81,66 +77,87 @@ export const Login = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1 className="auth-card__title">Welcome Back</h1>
-        <p className="auth-card__subtitle">Log in to your Game-Side account</p>
+    <div className="container py-5">
+      <div className="row justify-content-center">
+        <div className="col-md-5 col-lg-4">
+          <div className="card shadow-sm">
+            <div className="card-body p-4">
+              <h1 className="card-title text-center mb-1">Welcome Back</h1>
+              <p className="text-muted text-center mb-4">
+                Log in to your Game-Side account
+              </p>
 
-        <form onSubmit={handleSubmit} className="auth-form" noValidate>
-          {successMessage && (
-            <div className="auth-form__success">{successMessage}</div>
-          )}
-          {apiError && <div className="auth-form__error">{apiError}</div>}
+              <form onSubmit={handleSubmit} noValidate>
+                {successMessage && (
+                  <div className="alert alert-success" role="alert">
+                    {successMessage}
+                  </div>
+                )}
+                {apiError && (
+                  <div className="alert alert-danger" role="alert">
+                    {apiError}
+                  </div>
+                )}
 
-          <div className="auth-form__field">
-            <label htmlFor="email" className="auth-form__label">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className={`auth-form__input ${errors.email ? "auth-form__input--error" : ""}`}
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            {errors.email && (
-              <span className="auth-form__field-error">{errors.email}</span>
-            )}
+                <div className="mb-3">
+                  <label htmlFor="email" className="form-label">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  {errors.email && (
+                    <div className="invalid-feedback">{errors.email}</div>
+                  )}
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="password" className="form-label">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    className={`form-control ${errors.password ? "is-invalid" : ""}`}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  {errors.password && (
+                    <div className="invalid-feedback">{errors.password}</div>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" />
+                      Logging in…
+                    </>
+                  ) : (
+                    "Log In"
+                  )}
+                </button>
+              </form>
+
+              <p className="text-center mt-4 mb-0">
+                Don&apos;t have an account?{" "}
+                <Link to="/signup" className="text-decoration-none">
+                  Sign up
+                </Link>
+              </p>
+            </div>
           </div>
-
-          <div className="auth-form__field">
-            <label htmlFor="password" className="auth-form__label">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              className={`auth-form__input ${errors.password ? "auth-form__input--error" : ""}`}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {errors.password && (
-              <span className="auth-form__field-error">{errors.password}</span>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="auth-form__btn"
-            disabled={loading}
-          >
-            {loading ? "Logging in…" : "Log In"}
-          </button>
-        </form>
-
-        <p className="auth-card__footer">
-          Don&apos;t have an account?{" "}
-          <Link to="/signup" className="auth-card__link">
-            Sign up
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );
