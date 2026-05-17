@@ -31,17 +31,27 @@ export const Profile = () => {
       return;
     }
 
-    fetch(`${VITE_BACKEND_URL}/api/users/${store.user.id}`, {
-      headers: {
-        Authorization: `Bearer ${store.token}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`Error ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setUserData(data);
+    Promise.all([
+      fetch(`${VITE_BACKEND_URL}/api/users/${store.user.id}`, {
+        headers: { Authorization: `Bearer ${store.token}` },
+      }),
+      fetch(`${VITE_BACKEND_URL}/api/user/game-list`, {
+        headers: { Authorization: `Bearer ${store.token}` },
+      }),
+    ])
+      .then(async ([userRes, listRes]) => {
+        if (!userRes.ok) throw new Error(`Error ${userRes.status}`);
+        const userData = await userRes.json();
+        const user = userData.user || userData;
+
+        let games = [];
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          const list = listData.entry || listData;
+          games = list.games || [];
+        }
+
+        setUserData({ ...user, games });
         setLoading(false);
       })
       .catch((err) => {
@@ -50,12 +60,17 @@ export const Profile = () => {
       });
   }, [store.user?.id, store.token]);
 
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const userGames = userData?.games || [];
+  const favCount = userGames.filter((g) => g.is_favorite).length;
   const stats = {
     total: userGames.length,
-    comments: userData?.comment_count ?? userData?.comments?.length ?? 0,
-    favorites: userData?.favorite_count ?? userData?.favorites?.length ?? 0,
+    comments: userData?.comment_count ?? 0,
+    favorites: favCount,
   };
+  const displayedGames = showFavoritesOnly
+    ? userGames.filter((g) => g.is_favorite)
+    : userGames;
 
   // ═══════════════ LOADING ═══════════════
   if (loading) {
@@ -141,11 +156,21 @@ export const Profile = () => {
 
       {/* ═══ Game List ═══ */}
       <div className="card shadow-sm">
-        <div className="card-header">
-          <h2 className="h5 mb-0">Mis Juegos</h2>
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <h2 className="h5 mb-0">
+            {showFavoritesOnly ? "Favoritos" : "Mis Juegos"}
+          </h2>
+          {favCount > 0 && (
+            <button
+              className={`btn btn-sm ${showFavoritesOnly ? "btn-primary" : "btn-outline-primary"}`}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            >
+              {showFavoritesOnly ? "Ver todos" : `★ Favoritos (${favCount})`}
+            </button>
+          )}
         </div>
         <div className="card-body">
-          {userGames.length === 0 ? (
+          {displayedGames.length === 0 ? (
             <div className="text-center py-4">
               <p className="text-muted mb-3">
                 No tienes juegos registrados a\u00fan.
@@ -156,7 +181,7 @@ export const Profile = () => {
             </div>
           ) : (
             <div className="row g-3">
-              {userGames.map((entry) => {
+                {displayedGames.map((entry) => {
                 const game = entry.game || entry;
                 const status = entry.status || entry.user_status;
                 return (

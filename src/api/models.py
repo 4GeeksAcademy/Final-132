@@ -189,7 +189,8 @@ class UserGLG(db.Model):
             "review": self.review,
             "added_at": self.added_at.isoformat(),
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
-            "game": self.game.serialize()
+            "game": self.game.serialize(),
+            "is_favorite": self.is_favorite,
         }
 
 class Comment(db.Model):
