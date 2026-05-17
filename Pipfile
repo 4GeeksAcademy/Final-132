@@ -21,8 +21,8 @@ flask-jwt-extended = "==4.6.0"
 wtforms = "==3.1.2"
 sqlalchemy = "*"
 werkzeug = "*"
-flask-bcrypt = "*"
 pytz = "*"
+flask-bcrypt = "*"
 
 [requires]
 python_version = "3.13"
