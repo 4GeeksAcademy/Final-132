@@ -56,14 +56,15 @@ export const Login = () => {
         return;
       }
 
-      const { token, user } = data;
+      const { token, user_id } = data;
+      const userData = { id: user_id, username };
 
       sessionStorage.setItem("token", token);
-      sessionStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("user", JSON.stringify(userData));
 
       dispatch({
         type: "set_auth",
-        payload: { token, user },
+        payload: { token, user: userData },
       });
 
       navigate("/", { replace: true });
