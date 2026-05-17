@@ -32,6 +32,7 @@ def setup_commands(app):
     @app.cli.command("insert-test-data")
     def insert_test_data():
         from datetime import date
+        from extensions import bcrypt
         from api.models import Game, GameTier, User, Profile, UserGameList
 
         games_data = [
@@ -150,10 +151,12 @@ def setup_commands(app):
             print(f"  ✅ {game.title}")
 
         print("👤 Creando usuario de prueba...")
+        from extensions import bcrypt
+        password_hash = bcrypt.generate_password_hash("123456").decode('utf-8')
         user = User(
             username="testuser",
             email="test@game-side.com",
-            password_hash="123456",
+            password_hash=password_hash,
             is_active=True,
             is_admin=True
         )
