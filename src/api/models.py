@@ -96,6 +96,7 @@ class Game(db.Model):
             "game_tier": self.game_tier.serialize() if self.game_tier else None,
             "comment_count": len(self.comments),
             "favorite_count": self.get_favorites(),
+            "comments": [c.serialize() for c in self.comments],
         }
 
 class Profile(db.Model):

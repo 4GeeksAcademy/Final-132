@@ -40,18 +40,29 @@ export const GameDetail = () => {
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState([]);
   const [posting, setPosting] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`${VITE_BACKEND_URL}/api/games/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Error ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setGame(data);
-        setComments(data.comments || []);
+    Promise.all([
+      fetch(`${VITE_BACKEND_URL}/api/games/${id}`),
+      fetch(`${VITE_BACKEND_URL}/api/favorite/status/${id}`, {
+        headers: sessionStorage.getItem("token")
+          ? { Authorization: `Bearer ${sessionStorage.getItem("token")}` }
+          : {},
+      }),
+    ])
+      .then(async ([gameRes, favRes]) => {
+        if (!gameRes.ok) throw new Error(`Error ${gameRes.status}`);
+        const gameData = await gameRes.json();
+        setGame(gameData);
+        setComments(gameData.comments || []);
+        if (favRes.ok) {
+          const favData = await favRes.json();
+          setIsFavorite(favData.is_favorite);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -81,6 +92,32 @@ export const GameDetail = () => {
       console.error("Error posting comment:", err);
     } finally {
       setPosting(false);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    setFavLoading(true);
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch(`${VITE_BACKEND_URL}/api/favorite/change`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ game_id: parseInt(id) }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsFavorite(data.is_favorite);
+        // Refetch game to update favorite_count
+        const gameRes = await fetch(`${VITE_BACKEND_URL}/api/games/${id}`);
+        if (gameRes.ok) setGame(await gameRes.json());
+      }
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+    } finally {
+      setFavLoading(false);
     }
   };
 
@@ -283,6 +320,13 @@ export const GameDetail = () => {
             <span className="game-detail__stat">
               ❤️ {game.favorite_count ?? 0} favoritos
             </span>
+            <button
+              className={`game-detail__fav-btn ${isFavorite ? "game-detail__fav-btn--active" : ""}`}
+              onClick={handleToggleFavorite}
+              disabled={favLoading}
+            >
+              {isFavorite ? "★" : "☆"} {isFavorite ? "Favorito" : "Favoritos"}
+            </button>
           </div>
 
           {/* ── Comments Section ── */}
