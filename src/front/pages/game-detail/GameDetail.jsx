@@ -230,12 +230,11 @@ export const GameDetail = () => {
           <div className="game-detail__hero-fallback">
             {game.title?.slice(0, 2).toUpperCase() || "??"}
           </div>
-          {game.tier && (
+          {game.tier && game.tier !== "Undefined" && (
             <span
               className="game-detail__tier"
               style={{
-                backgroundColor:
-                  TIER_COLORS[game.tier] || TIER_COLORS.Undefined,
+                backgroundColor: TIER_COLORS[game.tier] || "#C0C0C0",
               }}
             >
               {game.tier}
