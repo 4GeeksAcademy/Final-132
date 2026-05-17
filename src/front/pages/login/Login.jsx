@@ -9,7 +9,7 @@ export const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
@@ -24,10 +24,8 @@ export const Login = () => {
 
   const validate = () => {
     const errs = {};
-    if (!email.trim()) {
-      errs.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errs.email = "Invalid email format";
+    if (!username.trim()) {
+      errs.username = "Username is required";
     }
     if (!password) {
       errs.password = "Password is required";
@@ -48,7 +46,7 @@ export const Login = () => {
       const resp = await fetch(`${VITE_BACKEND_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await resp.json();
@@ -100,19 +98,19 @@ export const Login = () => {
                 )}
 
                 <div className="mb-3">
-                  <label htmlFor="email" className="form-label">
-                    Email
+                  <label htmlFor="username" className="form-label">
+                    Username
                   </label>
                   <input
-                    id="email"
-                    type="email"
-                    className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="username"
+                    type="text"
+                    className={`form-control ${errors.username ? "is-invalid" : ""}`}
+                    placeholder="Your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
-                  {errors.email && (
-                    <div className="invalid-feedback">{errors.email}</div>
+                  {errors.username && (
+                    <div className="invalid-feedback">{errors.username}</div>
                   )}
                 </div>
 
