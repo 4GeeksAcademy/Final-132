@@ -170,7 +170,7 @@ def get_survey():
 
     return jsonify([s.serialize() for s in surveys]), 200
 
-# POST /users/<id>/survey — Crear encuesta
+# POST /users/survey — Crear encuesta
 @api.route('/users/survey', methods=['POST'])
 @jwt_required()
 def create_survey():
@@ -180,19 +180,17 @@ def create_survey():
     if not body:
         return jsonify({"msg": "No data provided"}), 400
 
-    required = ["user_id","game_id", "genres", "platforms", "play_style", "favorite_themes", "completed_at"] # se puede cambiar en funcion de lo que pongamos en la encuesta
-    for field in required:
-        if field not in body:
-            return jsonify({"msg": "Missing field: {field}"}), 400
+    required = ["genres", "platforms", "play_style"]
+    missing = [f for f in required if f not in body]
+    if missing:
+        return jsonify({"msg": f"Missing fields: {', '.join(missing)}"}), 400
+
     survey = UserSurvey(
-            # esto se podria cambiar si se pide otras cosas en la encuesta
-         game_id=body["game_id"],
-         user_id= current_user_id,
-         genres=body["genres"],
-         platforms=body["platforms"],
-         play_style=body["play_style"],
-         favorite_themes=body["favorite_themes"],
-         completed_at=body["completed_at"]     
+        user_id=current_user_id,
+        genres=body["genres"],
+        platforms=body["platforms"],
+        play_style=body["play_style"],
+        favorite_themes=body.get("favorite_themes", []),
     )
     db.session.add(survey)
     db.session.commit()

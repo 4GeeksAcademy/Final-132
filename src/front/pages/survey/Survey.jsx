@@ -79,7 +79,7 @@ export const Survey = () => {
 
     try {
       const token = sessionStorage.getItem("token");
-      const res = await fetch(`${VITE_BACKEND_URL}/api/survey`, {
+      const res = await fetch(`${VITE_BACKEND_URL}/api/users/survey`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

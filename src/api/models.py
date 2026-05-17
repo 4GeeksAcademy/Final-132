@@ -120,12 +120,12 @@ class Profile(db.Model):
 class UserSurvey(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
-    game_id: Mapped[int] = mapped_column(ForeignKey('game.id'), nullable=False)
+    game_id: Mapped[Optional[int]] = mapped_column(ForeignKey('game.id'), nullable=True)
     genres: Mapped[list] = mapped_column(JSON, nullable=False)
     platforms: Mapped[list] = mapped_column(JSON, nullable=False)
     play_style: Mapped[str] = mapped_column(String(20), nullable=False)
-    favorite_themes: Mapped[list] = mapped_column(JSON, nullable=False)
-    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    favorite_themes: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     # Relaciones
     user: Mapped["User"] = relationship("User", back_populates="surveys")
@@ -140,7 +140,7 @@ class UserSurvey(db.Model):
             "genres": self.genres,
             "platforms": self.platforms,
             "play_style": self.play_style,
-            "favorite_themes": self.favorite_themes,
+            "favorite_themes": self.favorite_themes or [],
             "completed_at": self.completed_at.isoformat(),
         }
 
