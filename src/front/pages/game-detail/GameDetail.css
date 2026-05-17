@@ -94,17 +94,74 @@
 
 /* ── Stars / Rating ── */
 
+.game-detail__rating-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
 .game-detail__stars {
   font-size: var(--font-size-xl);
   color: #f59e0b;
-  display: inline-block;
-  margin-bottom: var(--space-lg);
+  display: inline-flex;
+  align-items: center;
 }
 
 .game-detail__rating-value {
   font-size: var(--font-size-base);
   color: var(--color-text-muted);
   font-family: var(--font-body);
+}
+
+.game-detail__stars-input {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.game-detail__stars-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.game-detail__stars-group {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.game-detail__star-btn {
+  background: none;
+  border: none;
+  font-size: var(--font-size-xl);
+  color: #d0d0d0;
+  cursor: pointer;
+  padding: 0 2px;
+  transition: color 0.15s, transform 0.15s;
+  line-height: 1;
+}
+
+.game-detail__star-btn:hover {
+  color: #f59e0b;
+  transform: scale(1.2);
+}
+
+.game-detail__star-btn--active {
+  color: #f59e0b;
+}
+
+.game-detail__star-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.game-detail__rating-loading {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  animation: pulse 1s infinite;
 }
 
 /* ── Metadata ── */

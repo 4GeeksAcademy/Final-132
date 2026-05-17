@@ -42,27 +42,50 @@ export const GameDetail = () => {
   const [posting, setPosting] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [ratingLoading, setRatingLoading] = useState(false);
+  const [userVoteId, setUserVoteId] = useState(null);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
+    const token = sessionStorage.getItem("token");
+    const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
     Promise.all([
       fetch(`${VITE_BACKEND_URL}/api/games/${id}`),
       fetch(`${VITE_BACKEND_URL}/api/favorite/status/${id}`, {
-        headers: sessionStorage.getItem("token")
-          ? { Authorization: `Bearer ${sessionStorage.getItem("token")}` }
-          : {},
+        headers: authHeaders,
+      }),
+      fetch(`${VITE_BACKEND_URL}/api/user/game-tiers`, {
+        headers: authHeaders,
       }),
     ])
-      .then(async ([gameRes, favRes]) => {
+      .then(async ([gameRes, favRes, voteRes]) => {
         if (!gameRes.ok) throw new Error(`Error ${gameRes.status}`);
         const gameData = await gameRes.json();
         setGame(gameData);
         setComments(gameData.comments || []);
+
         if (favRes.ok) {
           const favData = await favRes.json();
           setIsFavorite(favData.is_favorite);
         }
+
+        // Check if user already voted for this game
+        if (voteRes.ok) {
+          const votes = await voteRes.json();
+          if (gameData.game_tier?.id) {
+            const myVote = (Array.isArray(votes) ? votes : []).find(
+              (v) => v.game_tier_id === gameData.game_tier.id
+            );
+            if (myVote) {
+              setUserRating(myVote.rating);
+              setUserVoteId(myVote.id);
+            }
+          }
+        }
+
         setLoading(false);
       })
       .catch((err) => {
@@ -110,7 +133,6 @@ export const GameDetail = () => {
       if (res.ok) {
         const data = await res.json();
         setIsFavorite(data.is_favorite);
-        // Refetch game to update favorite_count
         const gameRes = await fetch(`${VITE_BACKEND_URL}/api/games/${id}`);
         if (gameRes.ok) setGame(await gameRes.json());
       }
@@ -121,17 +143,86 @@ export const GameDetail = () => {
     }
   };
 
+  const handleRate = async (rating) => {
+    setRatingLoading(true);
+    try {
+      const token = sessionStorage.getItem("token");
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+      const body = { game_id: parseInt(id), rating };
+
+      if (userVoteId) {
+        // Update existing vote
+        const res = await fetch(
+          `${VITE_BACKEND_URL}/api/user/game-tiers/${userVoteId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeaders,
+            },
+            body: JSON.stringify({ rating }),
+          }
+        );
+        if (!res.ok) throw new Error("Failed to update vote");
+      } else {
+        // Create new vote
+        const res = await fetch(`${VITE_BACKEND_URL}/api/user/game-tiers`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeaders,
+          },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error("Failed to create vote");
+      }
+
+      // Refetch game to update average rating
+      const gameRes = await fetch(`${VITE_BACKEND_URL}/api/games/${id}`);
+      if (gameRes.ok) {
+        const data = await gameRes.json();
+        setGame(data);
+      }
+      setUserRating(rating);
+    } catch (err) {
+      console.error("Error rating game:", err);
+    } finally {
+      setRatingLoading(false);
+    }
+  };
+
   const renderStars = (rating) => {
-    if (rating == null) return null;
-    const rounded = Math.round(rating);
+    const displayRating = game?.average_rating ?? 0;
+    const rounded = Math.round(displayRating);
     return (
-      <span className="game-detail__stars">
-        {"★".repeat(rounded)}
-        {"☆".repeat(5 - rounded)}
-        <span className="game-detail__rating-value">
-          {" "}({Number(rating).toFixed(1)})
+      <div className="game-detail__rating-section">
+        {/* Interactive stars for voting */}
+        <div className="game-detail__stars-input">
+          <span className="game-detail__stars-label">Tu valoración:</span>
+          <div className="game-detail__stars-group">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                className={`game-detail__star-btn ${star <= userRating ? "game-detail__star-btn--active" : ""}`}
+                onClick={() => handleRate(star)}
+                disabled={ratingLoading}
+                title={`${star} estrella${star > 1 ? "s" : ""}`}
+              >
+                {star <= userRating ? "★" : "☆"}
+              </button>
+            ))}
+          </div>
+          {ratingLoading && <span className="game-detail__rating-loading">...</span>}
+        </div>
+        {/* Display average rating */}
+        <span className="game-detail__stars">
+          {"★".repeat(rounded)}
+          {"☆".repeat(5 - rounded)}
+          <span className="game-detail__rating-value">
+            {" "}({Number(displayRating).toFixed(1)})
+          </span>
         </span>
-      </span>
+      </div>
     );
   };
 
