@@ -33,6 +33,7 @@ export const router = createBrowserRouter(
       <Route element={<RequireAuth />}>
         <Route path="/profile" element={<Profile />} />
         <Route path="/game-detail/:id" element={<GameDetail />} />
+        <Route path="/survey" element={<Survey />} />
         <Route path="/survey/:gameId" element={<Survey />} />
         <Route path="/tier-list" element={<TierList />} />
       </Route>
