@@ -1,0 +1,177 @@
+/* ═══════════════════════════════════════════
+   Login Page — Figma UI Redesign
+   ═══════════════════════════════════════════ */
+
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 200px);
+  padding: var(--space-2xl) var(--space-md);
+}
+
+.login__inner {
+  width: 100%;
+  max-width: 440px;
+}
+
+.login__card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.login__card-body {
+  padding: var(--space-xl);
+}
+
+.login__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 4vw, var(--font-size-2xl));
+  color: var(--color-text);
+  text-align: center;
+  margin: 0 0 var(--space-xs);
+}
+
+.login__subtitle {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--space-lg);
+}
+
+.login__alert {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-md);
+}
+
+.login__alert--success {
+  background: rgba(125, 215, 80, 0.12);
+  color: #3a7a1e;
+  border: 1px solid var(--color-primary);
+}
+
+.login__alert--error {
+  background: rgba(214, 79, 130, 0.1);
+  color: #a8325e;
+  border: 1px solid var(--color-secondary);
+}
+
+.login__field {
+  margin-bottom: var(--space-md);
+}
+
+.login__label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+}
+
+.login__input {
+  display: block;
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.login__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(125, 215, 80, 0.15);
+}
+
+.login__input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.login__input--error {
+  border-color: #e74c3c;
+}
+
+.login__input--error:focus {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
+}
+
+.login__error {
+  color: #e74c3c;
+  font-size: var(--font-size-xs);
+  margin-top: var(--space-xs);
+}
+
+.login__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.login__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login__btn--submit {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.login__btn--submit:hover:not(:disabled) {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.login__spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: login-spin 0.6s linear infinite;
+}
+
+@keyframes login-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.login__footer {
+  text-align: center;
+  margin-top: var(--space-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.login__link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login__link:hover {
+  text-decoration: underline;
+}

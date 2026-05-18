@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../../hooks/useGlobalReducer.jsx";
+import "./Signup.css";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "";
 
@@ -41,7 +42,7 @@ export const Signup = () => {
     if (!form.username.trim()) {
       errs.username = "Username is required";
     } else if (!/^[a-zA-Z0-9_]{3,20}$/.test(form.username)) {
-      errs.username = "Username must be 3–20 alphanumeric characters";
+      errs.username = "Username must be 3\u201320 alphanumeric characters";
     }
 
     if (!form.email.trim()) {
@@ -103,116 +104,112 @@ export const Signup = () => {
   };
 
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6 col-lg-5">
-          <div className="card shadow-sm">
-            <div className="card-body p-4">
-              <h1 className="card-title text-center mb-1">Create Account</h1>
-              <p className="text-muted text-center mb-4">
-                Join Game-Side today
-              </p>
+    <div className="signup">
+      <div className="signup__inner">
+        <div className="signup__card">
+          <div className="signup__card-body">
+            <h1 className="signup__title">Create Account</h1>
+            <p className="signup__subtitle">Join Game-Side today</p>
 
-              <form onSubmit={handleSubmit} noValidate>
-                {apiError && (
-                  <div className="alert alert-danger" role="alert">
-                    {apiError}
+            <form onSubmit={handleSubmit} noValidate>
+              {apiError && (
+                <div className="signup__alert signup__alert--error" role="alert">
+                  {apiError}
+                </div>
+              )}
+
+              <div className="signup__field">
+                <label htmlFor="username" className="signup__label">
+                  Username
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  className={`signup__input ${errors.username ? "signup__input--error" : ""}`}
+                  placeholder="Your username"
+                  value={form.username}
+                  onChange={handleChange("username")}
+                />
+                {errors.username && (
+                  <div className="signup__error">{errors.username}</div>
+                )}
+              </div>
+
+              <div className="signup__field">
+                <label htmlFor="email" className="signup__label">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  className={`signup__input ${errors.email ? "signup__input--error" : ""}`}
+                  placeholder="you@example.com"
+                  value={form.email}
+                  onChange={handleChange("email")}
+                />
+                {errors.email && (
+                  <div className="signup__error">{errors.email}</div>
+                )}
+              </div>
+
+              <div className="signup__field">
+                <label htmlFor="password" className="signup__label">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  className={`signup__input ${errors.password ? "signup__input--error" : ""}`}
+                  placeholder="At least 8 characters"
+                  value={form.password}
+                  onChange={handleChange("password")}
+                />
+                {errors.password && (
+                  <div className="signup__error">{errors.password}</div>
+                )}
+              </div>
+
+              <div className="signup__field">
+                <label htmlFor="confirmPassword" className="signup__label">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  className={`signup__input ${errors.confirmPassword ? "signup__input--error" : ""}`}
+                  placeholder="Repeat your password"
+                  value={form.confirmPassword}
+                  onChange={handleChange("confirmPassword")}
+                />
+                {errors.confirmPassword && (
+                  <div className="signup__error">
+                    {errors.confirmPassword}
                   </div>
                 )}
+              </div>
 
-                <div className="mb-3">
-                  <label htmlFor="username" className="form-label">
-                    Username
-                  </label>
-                  <input
-                    id="username"
-                    type="text"
-                    className={`form-control ${errors.username ? "is-invalid" : ""}`}
-                    placeholder="Your username"
-                    value={form.username}
-                    onChange={handleChange("username")}
-                  />
-                  {errors.username && (
-                    <div className="invalid-feedback">{errors.username}</div>
-                  )}
-                </div>
+              <button
+                type="submit"
+                className="signup__btn signup__btn--submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="signup__spinner" role="status" />
+                    Creating account\u2026
+                  </>
+                ) : (
+                  "Sign Up"
+                )}
+              </button>
+            </form>
 
-                <div className="mb-3">
-                  <label htmlFor="email" className="form-label">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                    placeholder="you@example.com"
-                    value={form.email}
-                    onChange={handleChange("email")}
-                  />
-                  {errors.email && (
-                    <div className="invalid-feedback">{errors.email}</div>
-                  )}
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                    placeholder="At least 8 characters"
-                    value={form.password}
-                    onChange={handleChange("password")}
-                  />
-                  {errors.password && (
-                    <div className="invalid-feedback">{errors.password}</div>
-                  )}
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="confirmPassword" className="form-label">
-                    Confirm Password
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    className={`form-control ${errors.confirmPassword ? "is-invalid" : ""}`}
-                    placeholder="Repeat your password"
-                    value={form.confirmPassword}
-                    onChange={handleChange("confirmPassword")}
-                  />
-                  {errors.confirmPassword && (
-                    <div className="invalid-feedback">
-                      {errors.confirmPassword}
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary w-100"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" />
-                      Creating account…
-                    </>
-                  ) : (
-                    "Sign Up"
-                  )}
-                </button>
-              </form>
-
-              <p className="text-center mt-4 mb-0">
-                Already have an account?{" "}
-                <Link to="/login" className="text-decoration-none">
-                  Log in
-                </Link>
-              </p>
-            </div>
+            <p className="signup__footer">
+              Already have an account?{" "}
+              <Link to="/login" className="signup__link">
+                Log in
+              </Link>
+            </p>
           </div>
         </div>
       </div>

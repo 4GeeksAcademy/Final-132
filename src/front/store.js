@@ -1,21 +1,9 @@
 export const initialStore = () => {
   return {
-    // ─── Datos del template original (no borrar) ───
+    // ─── Mensaje ───
     message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      },
-    ],
 
-    // ─── 👇 AGREGADO para auth (Login / Signup / Profile) ───
+    // ─── Auth ───
     user: null,
     token: null,
     isAuthenticated: false,
@@ -27,28 +15,11 @@ export const initialStore = () => {
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-    // ─── Del template original ───
-    case "set_hello":
-      return {
-        ...store,
-        message: action.payload,
-      };
-
-    case "add_task":
-      const { id, color } = action.payload;
-      return {
-        ...store,
-        todos: store.todos.map((todo) =>
-          todo.id === id ? { ...todo, background: color } : todo
-        ),
-      };
-
     // ─── Juegos ───
     case "set_games":
       return { ...store, games: action.payload };
 
-    // ─── 👇 AGREGADO para auth ───
-    // Después de login exitoso: guarda user + token en el store
+    // ─── Auth ───
     case "set_auth":
       return {
         ...store,
@@ -57,7 +28,6 @@ export default function storeReducer(store, action = {}) {
         isAuthenticated: true,
       };
 
-    // Cerrar sesión: limpia store y sessionStorage
     case "logout":
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("user");
@@ -68,7 +38,6 @@ export default function storeReducer(store, action = {}) {
         isAuthenticated: false,
       };
 
-    // Al recargar la página: recupera token desde sessionStorage
     case "restore_auth":
       const token = sessionStorage.getItem("token");
       const user = JSON.parse(sessionStorage.getItem("user") || "null");

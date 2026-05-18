@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 // ─── Link para navegación interna ───
 import { Link } from "react-router-dom";
+// ─── Componente GameCard ───
+import { GameCard } from "../components/GameCard";
+// ─── Estilos Figma ───
+import "./Home.css";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "";
 
@@ -45,18 +49,18 @@ export const Home = () => {
   //  HERO
   // ═══════════════════════════════════════
   const HeroSection = () => (
-    <section className="bg-dark text-white text-center py-5">
-      <div className="container">
-        <h1 className="display-4 fw-bold mb-3">Tu Universo Gaming</h1>
-        <p className="lead mb-4">
+    <section className="hero">
+      <div className="hero__inner">
+        <h1 className="hero__title">Tu Universo Gaming</h1>
+        <p className="hero__subtitle">
           Descubre, rastrea y califica tus videojuegos favoritos. Únete a una
           comunidad apasionada de gamers.
         </p>
-        <div className="d-flex gap-3 justify-content-center">
-          <a href="#features" className="btn btn-primary btn-lg">
+        <div className="hero__actions">
+          <a href="#features" className="hero__btn hero__btn--primary">
             Comenzar ahora &rarr;
           </a>
-          <a href="#trending" className="btn btn-outline-light btn-lg">
+          <a href="#trending" className="hero__btn hero__btn--secondary">
             Explorar juegos
           </a>
         </div>
@@ -68,36 +72,24 @@ export const Home = () => {
   //  FEATURES
   // ═══════════════════════════════════════
   const FeaturesSection = () => (
-    <section id="features" className="py-5">
-      <div className="container">
-        <h2 className="text-center mb-5">Tu experiencia Game-side</h2>
-        <div className="row g-4">
-          <div className="col-md-4">
-            <div className="card text-center h-100 shadow-sm">
-              <div className="card-body">
-                <div style={{ fontSize: "2.5rem" }}>🔍</div>
-                <h3 className="card-title h5 mt-3">Descubre</h3>
-                <p className="card-text text-muted">Miles de juegos</p>
-              </div>
-            </div>
+    <section id="features" className="features">
+      <div className="features__inner">
+        <h2 className="features__title">Tu experiencia Game-side</h2>
+        <div className="features__grid">
+          <div className="feature-card">
+            <span className="feature-card__icon">🔍</span>
+            <h3 className="feature-card__title">Descubre</h3>
+            <p className="feature-card__desc">Miles de juegos</p>
           </div>
-          <div className="col-md-4">
-            <div className="card text-center h-100 shadow-sm">
-              <div className="card-body">
-                <div style={{ fontSize: "2.5rem" }}>📚</div>
-                <h3 className="card-title h5 mt-3">Organiza</h3>
-                <p className="card-text text-muted">Biblioteca personalizada</p>
-              </div>
-            </div>
+          <div className="feature-card">
+            <span className="feature-card__icon">📚</span>
+            <h3 className="feature-card__title">Organiza</h3>
+            <p className="feature-card__desc">Biblioteca personalizada</p>
           </div>
-          <div className="col-md-4">
-            <div className="card text-center h-100 shadow-sm">
-              <div className="card-body">
-                <div style={{ fontSize: "2.5rem" }}>💬</div>
-                <h3 className="card-title h5 mt-3">Comparte</h3>
-                <p className="card-text text-muted">Tus gustos y opiniones</p>
-              </div>
-            </div>
+          <div className="feature-card">
+            <span className="feature-card__icon">💬</span>
+            <h3 className="feature-card__title">Comparte</h3>
+            <p className="feature-card__desc">Tus gustos y opiniones</p>
           </div>
         </div>
       </div>
@@ -105,107 +97,42 @@ export const Home = () => {
   );
 
   // ═══════════════════════════════════════
-  //  GAME CARD (renderiza un juego individual)
-  // ═══════════════════════════════════════
-  const GameCardItem = ({ game }) => (
-    <div className="col-md-6 col-lg-3">
-      <div className="card h-100 shadow-sm">
-        <Link to={`/game-detail/${game.id}`} className="text-decoration-none">
-          <div
-            className="bg-light d-flex align-items-center justify-content-center"
-            style={{ height: "200px", overflow: "hidden" }}
-          >
-            {game.cover_img_url ? (
-              <img
-                src={game.cover_img_url}
-                alt={game.title}
-                className="img-fluid"
-                style={{ objectFit: "cover", height: "100%", width: "100%" }}
-                onError={(e) => {
-                  e.target.style.display = "none";
-                  e.target.nextSibling.style.display = "flex";
-                }}
-              />
-            ) : null}
-            <span
-              className="text-muted"
-              style={{
-                fontSize: "2rem",
-                fontWeight: "bold",
-                display: game.cover_img_url ? "none" : "flex",
-              }}
-            >
-              {game.title?.slice(0, 2).toUpperCase() || "??"}
-            </span>
-          </div>
-        </Link>
-        <div className="card-body">
-          <Link
-            to={`/game-detail/${game.id}`}
-            className="text-decoration-none text-dark"
-          >
-            <h5 className="card-title">{game.title}</h5>
-          </Link>
-          {game.genre && (
-            <span className="badge bg-secondary me-1">{game.genre}</span>
-          )}
-          {game.platform && (
-            <span className="badge bg-info text-dark">{game.platform}</span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  // ═══════════════════════════════════════
   //  SURVEY CTA
   // ═══════════════════════════════════════
   const SurveyCTASection = () => (
-    <section className="bg-light py-5">
-      <div className="container text-center">
-        <h2 className="mb-3">
+    <section className="survey-cta">
+      <div className="survey-cta__inner">
+        <h2 className="survey-cta__title">
           Tu pr&oacute;ximo descubrimiento est&aacute; aqu&iacute;
         </h2>
-        <p className="text-muted mb-5">
+        <p className="survey-cta__subtitle">
           Responde unas preguntas r&aacute;pidas y recibe recomendaciones
           hechas para ti.
         </p>
-        <div className="row g-4 mb-5">
-          <div className="col-md-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body">
-                <h4 className="card-title h5">Personaliza</h4>
-                <p className="card-text text-muted">
-                  Recibe recomendaciones basadas en tus g&eacute;neros, estilo
-                  de juego y preferencias reales.
-                </p>
-              </div>
-            </div>
+        <div className="survey-cta__grid">
+          <div className="survey-cta__card">
+            <h4 className="survey-cta__card-title">Personaliza</h4>
+            <p className="survey-cta__card-desc">
+              Recibe recomendaciones basadas en tus g&eacute;neros, estilo
+              de juego y preferencias reales.
+            </p>
           </div>
-          <div className="col-md-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body">
-                <h4 className="card-title h5">Ahorra tiempo</h4>
-                <p className="card-text text-muted">
-                  Deja de perder horas buscando y encuentra t&iacute;tulos que
-                  encajen contigo al instante.
-                </p>
-              </div>
-            </div>
+          <div className="survey-cta__card">
+            <h4 className="survey-cta__card-title">Ahorra tiempo</h4>
+            <p className="survey-cta__card-desc">
+              Deja de perder horas buscando y encuentra t&iacute;tulos que
+              encajen contigo al instante.
+            </p>
           </div>
-          <div className="col-md-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body">
-                <h4 className="card-title h5">Descubre</h4>
-                <p className="card-text text-muted">
-                  Explora juegos nuevos, joyas ocultas y experiencias que
-                  probablemente nunca has encontrado.
-                </p>
-              </div>
-            </div>
+          <div className="survey-cta__card">
+            <h4 className="survey-cta__card-title">Descubre</h4>
+            <p className="survey-cta__card-desc">
+              Explora juegos nuevos, joyas ocultas y experiencias que
+              probablemente nunca has encontrado.
+            </p>
           </div>
         </div>
-        <Link to="/survey" className="btn btn-primary btn-lg">
+        <Link to="/survey" className="survey-cta__btn">
           Comenzar encuesta &rarr;
         </Link>
       </div>
@@ -217,23 +144,16 @@ export const Home = () => {
     return (
       <>
         <HeroSection />
-        <section className="py-5">
-          <div className="container">
-            <h2 className="text-center mb-4">Tendencias Ahora</h2>
-            <div className="row g-4">
+        <section className="section">
+          <div className="section__inner">
+            <h2 className="section__title">Tendencias Ahora</h2>
+            <div className="skeleton-grid">
               {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="col-md-6 col-lg-3">
-                  <div className="card shadow-sm" aria-hidden="true">
-                    <div
-                      className="bg-secondary placeholder"
-                      style={{ height: "200px" }}
-                    />
-                    <div className="card-body">
-                      <h5 className="card-title placeholder-glow">
-                        <span className="placeholder col-8" />
-                      </h5>
-                      <span className="placeholder col-4 placeholder-xs" />
-                    </div>
+                <div key={n} className="skeleton-card">
+                  <div className="skeleton-card__cover" />
+                  <div className="skeleton-card__body">
+                    <div className="skeleton-card__line skeleton-card__line--medium" />
+                    <div className="skeleton-card__line skeleton-card__line--short" />
                   </div>
                 </div>
               ))}
@@ -249,12 +169,10 @@ export const Home = () => {
     return (
       <>
         <HeroSection />
-        <div className="container py-5 text-center">
-          <div className="alert alert-danger">
-            <h4 className="alert-heading">Something went wrong</h4>
-            <p className="mb-0">{error}</p>
-          </div>
-          <button className="btn btn-primary" onClick={loadGames}>
+        <div className="error-state">
+          <h4 className="error-state__title">Something went wrong</h4>
+          <p className="error-state__desc">{error}</p>
+          <button className="error-state__btn" onClick={loadGames}>
             Retry
           </button>
         </div>
@@ -270,38 +188,43 @@ export const Home = () => {
       <FeaturesSection />
 
       {/* ─── Trending ─── */}
-      <section id="trending" className="py-5">
-        <div className="container">
-          <h2 className="text-center mb-4">Tendencias Ahora</h2>
+      <section id="trending" className="section">
+        <div className="section__inner">
+          <h2 className="section__title">Tendencias Ahora</h2>
           {games.length > 0 ? (
-            <div className="row g-4">
+            <div className="games-grid">
               {games.map((game) => (
-                <GameCardItem key={game.id} game={game} />
+                <GameCard key={game.id} game={game} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-5">
-              <h4 className="text-muted">No games available</h4>
-              <p>Be the first to add one!</p>
+            <div className="empty-state">
+              <h4 className="empty-state__title">No games available</h4>
+              <p className="empty-state__desc">Be the first to add one!</p>
             </div>
           )}
         </div>
       </section>
 
       {/* ─── Recommendations ─── */}
-      <section className="py-5 bg-light">
-        <div className="container">
-          <h2 className="text-center mb-4">Recomendaciones (para ti)</h2>
+      <section
+        className="section"
+        style={{ background: "var(--color-surface)" }}
+      >
+        <div className="section__inner">
+          <h2 className="section__title">Recomendaciones (para ti)</h2>
           {games.length > 0 ? (
-            <div className="row g-4">
+            <div className="games-grid">
               {games.slice(0, 4).map((game) => (
-                <GameCardItem key={game.id} game={game} />
+                <GameCard key={game.id} game={game} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-5">
-              <h4 className="text-muted">No hay recomendaciones a&uacute;n</h4>
-              <p>
+            <div className="empty-state">
+              <h4 className="empty-state__title">
+                No hay recomendaciones a&uacute;n
+              </h4>
+              <p className="empty-state__desc">
                 Completa tu perfil para recibir recomendaciones personalizadas.
               </p>
             </div>

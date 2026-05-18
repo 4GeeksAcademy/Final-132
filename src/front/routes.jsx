@@ -29,13 +29,15 @@ export const router = createBrowserRouter(
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
-      {/* ─── 👇 Ruta protegida (solo si está logueado) ─── */}
+      {/* ─── Rutas públicas ─── */}
+      <Route path="/game-detail/:id" element={<GameDetail />} />
+      <Route path="/tier-list" element={<TierList />} />
+
+      {/* ─── Rutas protegidas (requieren login) ─── */}
       <Route element={<RequireAuth />}>
         <Route path="/profile" element={<Profile />} />
-        <Route path="/game-detail/:id" element={<GameDetail />} />
         <Route path="/survey" element={<Survey />} />
         <Route path="/survey/:gameId" element={<Survey />} />
-        <Route path="/tier-list" element={<TierList />} />
       </Route>
     </Route>
   )

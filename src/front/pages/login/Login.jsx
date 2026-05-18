@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import useGlobalReducer from "../../hooks/useGlobalReducer.jsx";
+import "./Login.css";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "";
 
@@ -76,85 +77,83 @@ export const Login = () => {
   };
 
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-md-5 col-lg-4">
-          <div className="card shadow-sm">
-            <div className="card-body p-4">
-              <h1 className="card-title text-center mb-1">Welcome Back</h1>
-              <p className="text-muted text-center mb-4">
-                Log in to your Game-Side account
-              </p>
+    <div className="login">
+      <div className="login__inner">
+        <div className="login__card">
+          <div className="login__card-body">
+            <h1 className="login__title">Welcome Back</h1>
+            <p className="login__subtitle">
+              Log in to your Game-Side account
+            </p>
 
-              <form onSubmit={handleSubmit} noValidate>
-                {successMessage && (
-                  <div className="alert alert-success" role="alert">
-                    {successMessage}
-                  </div>
-                )}
-                {apiError && (
-                  <div className="alert alert-danger" role="alert">
-                    {apiError}
-                  </div>
-                )}
-
-                <div className="mb-3">
-                  <label htmlFor="username" className="form-label">
-                    Username
-                  </label>
-                  <input
-                    id="username"
-                    type="text"
-                    className={`form-control ${errors.username ? "is-invalid" : ""}`}
-                    placeholder="Your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                  {errors.username && (
-                    <div className="invalid-feedback">{errors.username}</div>
-                  )}
+            <form onSubmit={handleSubmit} noValidate>
+              {successMessage && (
+                <div className="login__alert login__alert--success" role="alert">
+                  {successMessage}
                 </div>
-
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  {errors.password && (
-                    <div className="invalid-feedback">{errors.password}</div>
-                  )}
+              )}
+              {apiError && (
+                <div className="login__alert login__alert--error" role="alert">
+                  {apiError}
                 </div>
+              )}
 
-                <button
-                  type="submit"
-                  className="btn btn-primary w-100"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" />
-                      Logging in…
-                    </>
-                  ) : (
-                    "Log In"
-                  )}
-                </button>
-              </form>
+              <div className="login__field">
+                <label htmlFor="username" className="login__label">
+                  Username
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  className={`login__input ${errors.username ? "login__input--error" : ""}`}
+                  placeholder="Your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                {errors.username && (
+                  <div className="login__error">{errors.username}</div>
+                )}
+              </div>
 
-              <p className="text-center mt-4 mb-0">
-                Don&apos;t have an account?{" "}
-                <Link to="/signup" className="text-decoration-none">
-                  Sign up
-                </Link>
-              </p>
-            </div>
+              <div className="login__field">
+                <label htmlFor="password" className="login__label">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  className={`login__input ${errors.password ? "login__input--error" : ""}`}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                {errors.password && (
+                  <div className="login__error">{errors.password}</div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="login__btn login__btn--submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="login__spinner" role="status" />
+                    Logging in…
+                  </>
+                ) : (
+                  "Log In"
+                )}
+              </button>
+            </form>
+
+            <p className="login__footer">
+              Don&apos;t have an account?{" "}
+              <Link to="/signup" className="login__link">
+                Sign up
+              </Link>
+            </p>
           </div>
         </div>
       </div>
