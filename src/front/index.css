@@ -5,8 +5,8 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--color-bg, #FFFFFF);
-  color: var(--color-text, #4F574B);
+  background: var(--color-bg, #0D0D0D);
+  color: var(--color-text, #F0F0F0);
   min-height: 100vh;
   font-family: var(--font-body, sans-serif);
 }

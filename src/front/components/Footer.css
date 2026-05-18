@@ -3,8 +3,8 @@
    ═══════════════════════════════════════════ */
 
 .footer {
-  background: var(--color-text);
-  color: var(--color-bg);
+  background: #1A1A1A;
+  color: #CCCCCC;
   padding: var(--space-2xl) var(--space-md) 0;
   margin-top: auto;
 }
@@ -46,7 +46,7 @@
 .footer__links a {
   display: block;
   font-size: var(--font-size-sm);
-  color: var(--color-bg);
+  color: #CCCCCC;
   text-decoration: none;
   padding: var(--space-xs) 0;
   opacity: 0.85;

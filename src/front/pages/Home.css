@@ -313,7 +313,7 @@
 
 /* ── Survey CTA ── */
 .survey-cta {
-  background: var(--color-text);
+  background: #1A1A1A;
   color: #fff;
   padding: var(--space-2xl) var(--space-md);
   text-align: center;
